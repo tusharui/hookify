@@ -1,7 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
@@ -10,4 +7,62 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+
+// USER 
+
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String?
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  generations HookGeneration[]
+}
+
+
+// generated session
+
+
+model HookGeneration {
+  id        String   @id @default(cuid())
+  userId    String
+  niche     String
+  input     String?
+  createdAt DateTime @default(now())
+
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  HookItem[]
+
+  @@index([userId])
+  @@index([niche])
+}
+
+
+// genrated content
+
+model HookItem {
+  id            String   @id @default(cuid())
+  generationId  String
+  content       String
+  type          ContentType
+  score         Int?
+  isFavorite    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  generation HookGeneration @relation(fields: [generationId], references: [id], onDelete: Cascade)
+
+  @@index([generationId])
+  @@index([type])
+}
+
+enum ContentType {
+  HOOK
+  TWEET
+  REEL
+  CAPTION
 }
